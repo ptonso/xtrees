@@ -6,9 +6,9 @@ XTrees is a Python library for explainability of tree-based models.
 
 - **Simplification of Random Forest:** Based on [Omer Sagi paper](https://www.sciencedirect.com/science/article/pii/S1566253519307869?via%3Dihub), this library provides an implementation for simply a Random Forest into a single "Forest Based Tree".
 
-- **Visualization:** A visualization framework for binary trees based using SankeyPlot.
+- **Visualization:** A visualization framework for binary trees based on SankeyPlot.
 
-- **Dashboard:** Iteractive dashboards for model evaluation and explration.
+- **Dashboard:** Iteractive dashboards for model evaluation and explanation.
 
 ![Combined dashboard](./reports/combined_dash.png?raw=true)
 
@@ -43,7 +43,7 @@ combined_dashboard.run(port=8065)
 
 - [all-together.ipynb](./all-together.ipynb): A full demonstration of the tool.
 
-- [experiment_reg.ipynb](./experiment_reg.ipynb) and [experiment_class.ipynb](./experiment_class.ipynb): Experiment with FBT model
+- [experiment_reg.ipynb](./experiment_reg.ipynb) and [experiment_class.ipynb](./experiment_class.ipynb): Experiments for proposed model FBT model
 
 - [evaluate.ipynb](./evaluate.ipynb): Evaluate the results of experiment
 
