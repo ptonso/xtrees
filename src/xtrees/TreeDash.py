@@ -10,11 +10,12 @@ from .VizTree import VizTree
 
 
 class VizTreeDashboard:
-    def __init__(self, viz_tree, X_test, y_test):
+    def __init__(self, viz_tree, X_test, y_test, show_text=False):
         self.viz_tree = viz_tree
         self.is_classifier = self.viz_tree.is_classifier
         self.X_test = X_test
         self.y_test = y_test
+        self.show_text = show_text
         self.max_depth = viz_tree.max_depth
 
         self.app = dash.Dash(__name__)
@@ -55,10 +56,10 @@ class VizTreeDashboard:
         )
         def update_sankey_plot(max_depth):
             pruned_viz_tree = self.viz_tree.prune(max_depth)
-            if max_depth > 3:
-                pruned_sankey = SankeyTreePlot(pruned_viz_tree, show_text=False)
-            else:
+            if max_depth < 3 and self.show_text is None or self.show_text == True:
                 pruned_sankey = SankeyTreePlot(pruned_viz_tree, show_text=True)
+            else:
+                pruned_sankey = SankeyTreePlot(pruned_viz_tree, show_text=False)
             pruned_ypred = pruned_viz_tree.predict(self.X_test)
             if self.is_classifier:
                 metric = accuracy_score(self.y_test, pruned_ypred)
@@ -270,13 +271,11 @@ class CombinedDashboard:
             y_metric = accuracy_score(self.y_test, pruned_ypred)
             cong_metric = accuracy_score(self.rf_pred, pruned_ypred)
             ymetric_text = f"Acc.: {y_metric:.2f}"
-            # congmetric_text = f"Acc. rf pred.: {cong_metric:.2f}"
         else:
             y_metric = mean_absolute_error(self.y_test, pruned_ypred)
             cong_metric = mean_absolute_error(self.rf_pred, pruned_ypred)
             ymetric_text = f"MAE:  {y_metric:.2f}"
-            # congmetric_text = f"MAE rf pred.: {cong_metric:.2f}"
-        return [html.Span(ymetric_text)]# , html.Br(), html.Span(congmetric_text)]
+        return [html.Span(ymetric_text)]
 
     def setup_callbacks(self):
         @self.app.callback(
