@@ -53,8 +53,8 @@ def extract_class(df):
             'model_name': row['model_name'],
             'data_size': data_size,
             'accuracy': row['accuracy'],
-            'train_time': row['train_time'],
-            'pred_time': row['pred_time']
+            'train_time (s)': row['train_time (s)'],
+            'pred_time (s)': row['pred_time (s)']
         })
 
     return pd.DataFrame(extracted_data)
@@ -65,30 +65,30 @@ def average_reg_metrics(df):
     df['normalized_mse'] = df['mse'] / df['target_var']
     
     grouped = df.groupby('model_name').agg({
-        'train_time': ['mean', 'std'],
-        'pred_time': ['mean', 'std'],
+        'train_time (s)': ['mean', 'std'],
+        'pred_time (s)': ['mean', 'std'],
         'normalized_mse': ['mean', 'std'],
         'r2': ['mean', 'std']
     }).reset_index()
 
     grouped.columns = ['_'.join(col).strip('_') for col in grouped.columns.values]
-    for col in ['train_time', 'pred_time', 'normalized_mse', 'r2']:
+    for col in ['train_time (s)', 'pred_time (s)', 'normalized_mse', 'r2']:
         grouped[col] = grouped[f'{col}_mean'].round(4).astype(str) + ' ± ' + grouped[f'{col}_std'].round(2).astype(str)
         grouped.drop([f'{col}_mean', f'{col}_std'], axis=1, inplace=True)
-    grouped.columns = ["model_name", "train_time", "pred_time", "norm_mse",	"r2"]
+    grouped.columns = ["model_name", "train_time (s)", "pred_time (s)", "norm_mse",	"r2"]
     return grouped
 
 
 
 def average_class_metrics(df):
     grouped = df.groupby('model_name').agg({
-        'train_time': ['mean', 'std'],
-        'pred_time': ['mean', 'std'],
+        'train_time (s)': ['mean', 'std'],
+        'pred_time (s)': ['mean', 'std'],
         'accuracy': ['mean', 'std']
     }).reset_index()
 
     grouped.columns = ['_'.join(col).strip('_') for col in grouped.columns.values]
-    for col in ['train_time', 'pred_time', 'accuracy']:
+    for col in ['train_time (s)', 'pred_time (s)', 'accuracy']:
         grouped[col] = grouped[f'{col}_mean'].round(4).astype(str) + ' ± ' + grouped[f'{col}_std'].round(2).astype(str)
         grouped.drop([f'{col}_mean', f'{col}_std'], axis=1, inplace=True)
 

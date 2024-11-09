@@ -1,7 +1,7 @@
 import json
 import time
 from sklearn.datasets import make_classification, make_regression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error, r2_score, log_loss
 import numpy as np
 import pandas as pd
@@ -46,8 +46,13 @@ class Experiment:
             params['meta-params']['random_state'] = None
         if 'is_classification' not in params['meta-params']:
             raise ValueError("The 'is_classification' key must be present in 'meta-params'.")
+        if 'use_cross_validation' not in params['meta-params']:
+            params['meta-params']['use_cross_validation'] = False  # Default to normal train-test split
+        if 'cv_folds' not in params['meta-params']:
+            params['meta-params']['cv_folds'] = 5  # Default number of cross-validation folds
         self.params = params
         self.results = []
+
 
     def update_meta_params(self, new_meta_params):
         self._update_params('meta-params', new_meta_params)
@@ -159,16 +164,53 @@ class Experiment:
         return df
 
 
-    def run_single_experiment(self, meta_params, data_params, model_instance, dataset_id=None, fit_function=None):
-        if meta_params['is_classification']:
-            X, y = make_classification(**data_params)
+
+    def perform_cross_validation(self, X, y, model_instance, n_folds=5, is_classification=True, fit_function=None, random_state=None):
+            
+        kf = KFold(n_splits=n_folds, shuffle=True, random_state=random_state)
+        train_times = []
+        pred_times = []
+        accuracy, mse, mae, r2 = [], [], [], []
+
+        for train_index, test_index in kf.split(X):
+            X_train, X_test = X[train_index], X[test_index]
+            y_train, y_test = y[train_index], y[test_index]
+
+            start_train_time = time.time()
+            if fit_function:
+                model_instance = fit_function(model_instance, X_train, y_train)
+            else:
+                model_instance.fit(X_train, y_train)
+            train_times.append(time.time() - start_train_time)
+
+            start_pred_time = time.time()
+            y_pred = model_instance.predict(X_test)
+            pred_times.append(time.time() - start_pred_time)
+
+            # Calculate metrics based on the type of problem
+            if is_classification:
+                accuracy.append(accuracy_score(y_test, y_pred))
+            else:
+                mse.append(mean_squared_error(y_test, y_pred))
+                mae.append(mean_absolute_error(y_test, y_pred))
+                r2.append(r2_score(y_test, y_pred))
+
+        results = {
+            'train_time (s)': np.mean(train_times),
+            'pred_time (s)': np.mean(pred_times)
+        }
+
+        if is_classification:
+            results['accuracy'] = np.mean(accuracy)
         else:
-            X, y = make_regression(**data_params)
+            results['mse'] = np.mean(mse)
+            results['mae'] = np.mean(mae)
+            results['r2'] = np.mean(r2)
 
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=meta_params['train_test_split'], random_state=meta_params['random_state']
-        )
-
+        return results
+    
+    def perform_train_test(self, X, y, model_instance, is_classification=True, fit_function=None, random_state=None):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
         start_train_time = time.time()
         if fit_function:
             model_instance = fit_function(model_instance, X_train, y_train)
@@ -180,36 +222,60 @@ class Experiment:
         y_pred = model_instance.predict(X_test)
         pred_time = time.time() - start_pred_time
 
-        experiment_result = {
-            'dataset_id': dataset_id,
-            'experiment_id': len(self.results) + 1,
-            'train_time': train_time,
-            'pred_time': pred_time
+        # Compute metrics
+        results = {
+            'train_time (s)': train_time,
+            'pred_time (s)': pred_time
         }
 
-        if meta_params['is_classification']:
-            experiment_result['accuracy'] = accuracy_score(y_test, y_pred)
-            
-            if hasattr(model_instance, 'predict_proba'):
-                y_proba = model_instance.predict_proba(X_test)
-                unique_classes = np.unique(y_train)
-                # experiment_result['log_loss'] = log_loss(y_test, y_proba, labels=unique_classes)
-
+        if is_classification:
+            results['accuracy'] = accuracy_score(y_test, y_pred)
         else:
-            experiment_result['mse'] = mean_squared_error(y_test, y_pred)
-            experiment_result['mae'] = mean_absolute_error(y_test, y_pred)
-            experiment_result['r2'] = r2_score(y_test, y_pred)
-            target_avg = y.mean()
-            experiment_result['target_avg'] = target_avg
-            experiment_result['target_var'] = np.mean((y - target_avg) ** 2)
-            experiment_result['target_mad'] = np.mean(np.abs(y - target_avg))
+            results['mse'] = mean_squared_error(y_test, y_pred)
+            results['mae'] = mean_absolute_error(y_test, y_pred)
+            results['r2'] = r2_score(y_test, y_pred)
 
-        experiment_result.update({
-            'meta_params': meta_params,
-            'data_params': data_params
-        })
+        return results
+
+
+
+    def run_single_experiment(self, meta_params, data_params, model_instance, dataset_id=None, fit_function=None):
+        if meta_params['is_classification']:
+            X, y = make_classification(**data_params)
+        else:
+            X, y = make_regression(**data_params)
+
+        if meta_params['use_cross_validation']:
+            print(f"Running cross-validation with {meta_params['cv_folds']} folds...")
+            results = self.perform_cross_validation(
+                X, y, model_instance,
+                n_folds=meta_params['cv_folds'],
+                is_classification=meta_params['is_classification'],
+                fit_function=fit_function,
+                random_state=meta_params['random_state']
+            )
+        else:
+            print("Running standard train-test split...")
+            results = self.perform_train_test(
+                X, y, model_instance,
+                is_classification=meta_params['is_classification'],
+                fit_function=fit_function,
+                random_state=meta_params['random_state']
+            )
+
+        target_avg = y.mean()
+        results['target_avg'] = target_avg
+        results['target_var'] = np.mean((y - target_avg) ** 2)
+        results['target_mad'] = np.mean(np.abs(y - target_avg))
+
+        experiment_result = {
+            'dataset_id': dataset_id,
+            'experiment_id': len(self.results) + 1
+        }
+        experiment_result.update(results)
+        experiment_result.update({'meta_params': meta_params, 'data_params': data_params})
         self.results.append(experiment_result)
-        return
+
 
     def populate_data_params(self, num_datasets, overall_size, information, prediction):
         if overall_size not in self.size_definitions:

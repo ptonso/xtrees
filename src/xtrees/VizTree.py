@@ -148,9 +148,7 @@ class VizTree():
                 traverse(self.nodes[node.right], depth + 1)
 
         traverse(self.nodes[0], 0)
-
         list_nodes = [nodes_by_depth.get(depth, []) for depth in range(self.max_depth+1)]
-
         return list_nodes
 
 
@@ -477,3 +475,39 @@ class VizTree():
                 prune_node(node_id)
 
         self.update_max_depth()
+
+
+
+    def extract_df(self, tree_id=0):
+        branches = []
+        for node_id, node in self.nodes.items():
+            if node.left is None and node.right is None:
+                branch = self._build_branch(node_id)
+                branch['tree_id'] = tree_id
+                branches.append(branch)
+        
+        branch_df = pd.DataFrame(branches)
+        return branch_df
+    
+    def _build_branch(self, leaf_id):
+        node_id = leaf_id
+        node = self.nodes[node_id]
+
+        conditions = {f'{feat}_upper': np.inf for feat in self.feature_names}
+        conditions.update({f'{feat}_lower': -np.inf for feat in self.feature_names})
+
+        while node.parent is not None:
+            parent_node = self.nodes[node.parent]
+            feature = self.feature_names[parent_node.feature]
+
+            if node.is_left:
+                conditions[f'{feature}_upper'] = min(conditions[f'{feature}_upper'], parent_node.threshold)
+            else:
+                conditions[f'{feature}_lower'] = max(conditions[f'{feature}_lower'], parent_node.threshold)
+            node = parent_node
+
+        branch_importance = node.n_train / self.n_train if self.n_train > 0 else 0
+        value = self.nodes[leaf_id].value
+
+        branch_dict = {**conditions, 'branch_importance': branch_importance, 'value': value}
+        return branch_dict

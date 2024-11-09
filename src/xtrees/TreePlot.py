@@ -151,7 +151,6 @@ class SankeyTreePlot:
                     return color_struct[i][1]
             return color_struct[-1][1] 
 
-
     def add_color_label(self):
         if self.viz_tree.is_classifier:
             self.add_classification_color_label()
@@ -380,6 +379,7 @@ class GoTreePlot():
                 right_child = tree.nodes[node.right]                
                 # right_child.parent_edge_width = max(1, 20 * right_child.n_train / max_n)
                 right_child.parent_edge_width = 5
+
 
     def tree2plot(self, viz_tree, position):
         feature_names = viz_tree.feature_names
