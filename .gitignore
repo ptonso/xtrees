@@ -1,5 +1,10 @@
 
-
 /venv/
 /data/Sleep_health_and_lifestyle_dataset.csv
-/__pycache__/
+*__pycache__*
+
+
+data/*
+results/*
+
+__pycache__
