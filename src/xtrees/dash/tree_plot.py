@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import plotly.graph_objects as go
 
-from src.logger import setup_logger
-from src.xtrees.dash.vis_tree import VisTree
+from logger import setup_logger
+from xtrees.dash.vis_tree import VisTree
 
 
 class SankeyTreePlot:

@@ -6,8 +6,8 @@ from scipy.stats import entropy
 from sklearn.metrics import roc_curve, auc
 from statsmodels.distributions.empirical_distribution import ECDF
 
-from src.logger import setup_logger
-from src.utils import setup_toy_classifier, setup_toy_regressor
+from logger import setup_logger
+from xtrees.utils import setup_toy_classifier, setup_toy_regressor
 
 logger = setup_logger("api.log")
 EPSILON = 1e-6

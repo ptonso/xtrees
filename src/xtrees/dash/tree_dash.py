@@ -7,9 +7,9 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, mean_absolute_error
 
-from src.logger import setup_logger
-from src.xtrees.dash.tree_plot import SankeyTreePlot
-from src.xtrees.dash.vis_tree import VisTree
+from logger import setup_logger
+from xtrees.dash.tree_plot import SankeyTreePlot
+from xtrees.dash.vis_tree import VisTree
 
 
 class VisTreeDashboard:

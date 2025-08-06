@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: xtrees
+Version: 0.1.0
+License-File: LICENSE
+Requires-Dist: pandas
+Requires-Dist: scikit-learn
+Requires-Dist: jupyter-dash
+Requires-Dist: plotly
+Requires-Dist: dash
+Dynamic: license-file
+Dynamic: requires-dist

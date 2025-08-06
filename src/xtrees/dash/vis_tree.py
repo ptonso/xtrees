@@ -4,9 +4,9 @@ import pandas as pd
 import plotly.express as px
 from sklearn.tree import _tree
 
-from src.logger import setup_logger
-from src.utils import _fmt
-from src.xtrees.stats.node import NodeStatistics
+from logger import setup_logger
+from xtrees.utils import _fmt
+from xtrees.stats.node import NodeStatistics
 
 
 class VisNode:

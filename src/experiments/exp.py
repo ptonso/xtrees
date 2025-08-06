@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import RandomizedSearchCV
-from src.utils import show_df
+from xtrees.utils import show_df
 
 
 def read_result_csv(experiment_type: str) -> pd.DataFrame:

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from src.logger import setup_logger
+from logger import setup_logger
 
 
 class NodeStatistics:

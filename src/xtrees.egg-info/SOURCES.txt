@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+src/xtrees.egg-info/PKG-INFO
+src/xtrees.egg-info/SOURCES.txt
+src/xtrees.egg-info/dependency_links.txt
+src/xtrees.egg-info/requires.txt
+src/xtrees.egg-info/top_level.txt

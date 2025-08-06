@@ -11,7 +11,7 @@ except ImportError:
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
-from src.logger import setup_logger
+from logger import setup_logger
 
 
 logger = setup_logger("api.log")
